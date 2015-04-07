@@ -1,7 +1,7 @@
 ;;; Commentary : init file for emacs
 ;;; Code: code
 
-;;;(load "~/.emacs.d/prelude/init.el")
+;;(load "~/.emacs.d/prelude/init.el")
 ;;(require 'package)
 ;;(add-to-list 'package-archives
 ;;             '("elpy" . "http://jorgenschaefer.github.io/packages/"))
@@ -15,7 +15,7 @@
 
 ;; Setup packages
 (setq my-packages '(elpy
-		    popup)) 
+		    popup-switcher)) 
 
 ;; install packages
 
@@ -65,12 +65,16 @@
 ;; load theme
 (load-theme 'tango-dark)		    
 
-;;(defun company-my-backend (command &optional arg &rest ignored)
-;;  (pcase command
-;;    (`prefix (when (looking-back "foo\\>")
-;;              (match-string 0)))
-;;    (`candidates (list "foobar" "foobaz" "foobarbaz"))
-;;    (`meta (format "This value is named %s" arg))))
+
+;; ============ MODE SETUP ===========
+(elpy-enable)
+(ido-mode)
+(show-paren-mode 1)
+(setq show-paren-delay 0)
+(add-hook 'after-init-hook 'global-company-mode)
+
+;; ======== KEY BINDINGS =========
+(global-set-key [f2] 'psw-switch-buffer)
 
 
 ;; ========= SHELL SETUP ==============
@@ -106,9 +110,3 @@
     (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)))
 
 
-(elpy-enable)
-
-(ido-mode)
-
-(global-set-key (kbd "C-<tab>") 'ido-switch-buffer)
-;; (global-linum-mode t)
