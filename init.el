@@ -15,7 +15,8 @@
 
 ;; Setup packages
 (setq my-packages '(elpy
-		    popup-switcher)) 
+		    popup-switcher
+		    redo+)) 
 
 ;; install packages
 
@@ -67,6 +68,7 @@
 
 
 ;; ============ MODE SETUP ===========
+(require 'redo+)
 (elpy-enable)
 (ido-mode)
 (show-paren-mode 1)
@@ -76,6 +78,16 @@
 ;; ======== KEY BINDINGS =========
 (global-set-key [f2] 'psw-switch-buffer)
 
+(global-set-key (kbd "C-<prior>") (lambda() (interactive)(other-window -1)))
+
+(global-set-key (kbd "C-<next>") (lambda() (interactive)(other-window 1)))
+
+;; scroll without moving point
+(global-set-key (kbd "M-n") (lambda() (interactive)(scroll-up 1)))
+(global-set-key (kbd "M-p") (lambda() (interactive)(scroll-up -1)))
+
+;; redo+
+(global-set-key (kbd "C-x C-/") 'redo)
 
 ;; ========= SHELL SETUP ==============
 
