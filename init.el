@@ -21,7 +21,7 @@
 		    redo+
 		    web-mode
 		    ensime
-		    
+		    haskell-mode
 		    key-chord
 		    dirtree)) 
 
@@ -44,6 +44,9 @@
   (tool-bar-mode -1))
 
 (menu-bar-mode -1)
+
+;; set a normal readable font size
+(set-face-attribute 'default nil :height 100)
 
 ;; the blinking cursor is nothing, but an annoyance
 (blink-cursor-mode -1)
