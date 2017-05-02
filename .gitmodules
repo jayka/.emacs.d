@@ -1,0 +1,3 @@
+[submodule "piglatin-mode"]
+	path = piglatin-mode
+	url = git@github.com:dvryaboy/piglatin-mode.git

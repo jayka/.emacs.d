@@ -1,29 +1,38 @@
 ;;; Commentary : init file for emacs
 ;;; Code: code
 
-;;(load "~/.emacs.d/prelude/init.el")
-;;(require 'package)
-;;(add-to-list 'package-archives
-;;             '("elpy" . "http://jorgenschaefer.github.io/packages/"))
 
 (require 'package)
 (setq package-initialize-at-startup nil)
+;; add /usr/local/bin to path
+(if (eq system-type 'darwin)
+    (setq exec-path (append '("/usr/local/bin") exec-path)))
+
+;;(setq temporary-file-directory "~/.emacs.d/emacs-backup")
 
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-			 ;;("melpa-stable" . "http://melpa.milkbox.net/packages/")
-			 ("melpa" . "http://melpa.org/packages/")))
+			 ;;("melpa-stable" . "http://melpa-stable.milkbox.net/packages/")
+			 ("melpa" . "http://melpa.org/packages/")
+			 ))
 
 (package-initialize)
 
 ;; Setup packages
 (setq my-packages '(elpy
-		    popup-switcher
 		    redo+
-		    web-mode
-		    ensime
 		    haskell-mode
 		    key-chord
-		    dirtree)) 
+		    ivy
+		    ivy-hydra
+		    counsel
+		    magit
+		    js2-mode
+		    ;;powerline
+		    cider
+		    hc-zenburn-theme
+		    monokai-theme
+    		    )) 
+
 
 ;; install packages
 
@@ -34,8 +43,20 @@
     (package-install package)
     (message ".done")))
 
+;; tern mode for javascript and nodejs
+;; tern mode configs are in mode-setup section below
+(add-to-list 'load-path "~/.emacs.d/tern/emacs/")
     
 ;; ======== UI SETUP ============
+
+;; set a normal readable font size
+(set-face-attribute 'default nil :font "Source Code Pro for Powerline" :weight 'light :height 110)
+
+;;; I prefer cmd key for meta
+(setq mac-option-key-is-meta nil
+      mac-command-key-is-meta t
+      mac-command-modifier 'meta
+      mac-option-modifier 'super)
 
 ;; the toolbar is just a waste of valuable screen estate
 ;; in a tty tool-bar-mode does not properly auto-load, and is
@@ -43,10 +64,9 @@
 (when (fboundp 'tool-bar-mode)
   (tool-bar-mode -1))
 
-(menu-bar-mode -1)
+(setq initial-frame-alist '( (left . 0) (top . 0) (height . 60) (width . 100) ))
 
-;; set a normal readable font size
-(set-face-attribute 'default nil :height 100)
+(menu-bar-mode -1)
 
 ;; the blinking cursor is nothing, but an annoyance
 (blink-cursor-mode -1)
@@ -57,7 +77,10 @@
 ;; nice scrolling
 (setq scroll-margin 0
       scroll-conservatively 100000
-      scroll-preserve-screen-position 1)
+      scroll-preserve-screen-position 1
+      scroll-bar-width 5)
+
+(scroll-bar-mode -1)
 
 ;; mode line settings
 (line-number-mode t)
@@ -81,34 +104,61 @@
 (ad-activate 'quit-window)
 
 ;; load theme
-(load-theme 'tango-dark)		    
+(load-theme 'hc-zenburn t)		    
 
+;; powerline
+;;(setq powerline-arrow-shape 'curve)
+;;(setq powerline-default-separator-dir '(right . left))
+;; 
+;;(setq sml/theme 'powerline)
+;;(sml/setup)
 
 ;; ============ MODE SETUP ===========
+(require 'cider)
+
 (require 'redo+)
 (elpy-enable)
-(ido-mode)
+(cua-mode 1)
 (show-paren-mode 1)
 (setq show-paren-delay 0)
+
+(add-to-list 'auto-mode-alist '("\\.js\\'" . js2-mode))
+
 (add-hook 'after-init-hook 'global-company-mode)
 
-;; for html editing
-(require 'web-mode)
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-(defun my-web-mode-hook ()
-  "Hooks for Web mode."
-  (setq web-mode-markup-indent-offset 2)
-  (setq web-mode-code-indent-offset 2)
-  (setq web-mode-css-indent-offset 2)
-)
-(add-hook 'web-mode-hook  'my-web-mode-hook)
+;; tern-mode
+;;(autoload 'tern-mode "tern.el" nil t)
+;;(add-hook 'js2-mode-hook (lambda () (tern-mode t)))
+;;(eval-after-load 'tern
+;;   '(progn
+;;      (require 'tern-auto-complete)
+;;      (tern-ac-setup)))
+
+
+;; ivy mode
+(ivy-mode 1)
+(setq ivy-use-virtual-buffers t)
+(setq ivy-count-format "(%d/%d) ")
+(global-set-key (kbd "C-s") 'swiper)
+(global-set-key (kbd "M-x") 'counsel-M-x)
+(global-set-key (kbd "C-x C-f") 'counsel-find-file)
+(global-set-key (kbd "<f1> f") 'counsel-describe-function)
+(global-set-key (kbd "<f1> v") 'counsel-describe-variable)
+(global-set-key (kbd "<f1> l") 'counsel-find-library)
+(global-set-key (kbd "<f2> i") 'counsel-info-lookup-symbol)
+(global-set-key (kbd "<f2> u") 'counsel-unicode-char)
+(global-set-key (kbd "C-c g") 'counsel-git)
+(global-set-key (kbd "C-c j") 'counsel-git-grep)
+(global-set-key (kbd "C-c k") 'counsel-ag)
+(global-set-key (kbd "C-x l") 'counsel-locate)
+
 
 ;; Save History across sessions
 (savehist-mode 1)
+(if (not (file-exists-p "~/.emacs.d/tmp")) (mkdir "~/.emacs.d/tmp"))
+(if (not (file-exists-p "~/.emacs.d/tmp/savehist")) (write-file "~/.emacs.d/tmp/savehist"))
 (setq savehist-file "~/.emacs.d/tmp/savehist")
 
-;; enable dirtree
-(require 'dirtree)
 
 ;; enable recentfiles list mode
 (require 'recentf)
@@ -117,8 +167,6 @@
 ;;(global-set-key "C-x C-r" 'recentf-open-files)
 
 ;; ======== KEY BINDINGS =========
-(global-set-key [f2] 'psw-switch-buffer)
-
 (global-set-key (kbd "C-<prior>") (lambda() (interactive)(other-window -1)))
 
 (global-set-key (kbd "C-<next>") (lambda() (interactive)(other-window 1)))
@@ -152,94 +200,24 @@
 ;; key binding for find-function-at-point
 (global-set-key (kbd "C-h C-f") 'find-function-at-point)
 
-;; ERLANG EDTS setup
-;;(add-to-list 'load-path "~/.emacs.d/edts/")
-;;(require 'edts-start)
-
-
-;; scala mode setup
-(require 'ensime)
-(add-hook 'scala-mode-hook 'ensime-scala-mode-hook)
-(add-hook 'scala-mode-hook 'linum-mode)
-
-;;(setq ensime-auto-generate-config t)
-
 ;; emacs debug enable
 ;;(setq debug-on-error t)
 
 ;; store all backup and autosave files in the tmp dir
-(setq backup-directory-alist '(("" . "~/.emacs.d/emacs-backup")))
+(setq backup-directory-alist '((".*" . "~/.emacs.d/emacs-backup")))
+;; (setq auto-save-file-name-transforms '((".*" , "~/.emacs.d/emacs-backup" t)))
 
-
-;; ========= SHELL SETUP ==============
-
-;; Sets your shell to use cygwin's bash, if Emacs finds it's running
-;; under Windows and c:\cygwin exists. Assumes that C:\cygwin\bin is
-;; not already in your Windows Path (it generally should not be).
-;;
-
-;;(let*
-;;    ((cygwin-root "c:/cygwin")
-;;     (cygwin-bin
-;;      (concat cygwin-root "/bin")))
-;;  (when
-;;      (and
-;;       (eq 'windows-nt system-type)
-;;       (file-readable-p cygwin-root))
-;;    (setq exec-path
-;;	  (cons cygwin-bin exec-path))
-;;    (setenv "PATH"
-;;	    (concat cygwin-bin ";"	;
-;;		    (getenv "PATH")))
-;;    ;; By default use the Windows HOME.
-;;    ;; Otherwise, uncomment below to set a HOME
-;;    ;;      (setenv "HOME" (concat cygwin-root "/home/eric"))
-;;    
-;;    ;; NT-emacs assumes a Windows shell. Change to bash.
-;;    (setq shell-file-name "bash")
-;;    (setenv "SHELL" shell-file-name)
-;;    (setq explicit-shell-file-name shell-file-name)
-;;    ;; This removes unsightly ^M characters that would otherwise
-;;    ;; appear in the output of java applications.
-;;    (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)))
-
-;;(let*
-;;    ((msys-root "C:/Softwares/MinGW/msys/1.0")
-;;     (msys-bin
-;;      (concat msys-root "/bin")))
-;;  (when
-;;      (and
-;;       (eq 'windows-nt system-type)
-;;       (file-readable-p msys-root))
-;;    (setq exec-path
-;;	  (cons msys-bin exec-path))
-;;    (setenv "PATH"
-;;	    (concat msys-bin ";"	;
-;;		    (getenv "PATH")))
-;;    ;; By default use the Windows HOME.
-;;    ;; Otherwise, uncomment below to set a HOME
-;;    ;;      (setenv "HOME" (concat cygwin-root "/home/eric"))
-;;    
-;;    ;; NT-emacs assumes a Windows shell. Change to bash.
-;;    (setq shell-file-name "bash")
-;;    (setenv "SHELL" shell-file-name)
-;;    (setq explicit-shell-file-name shell-file-name)
-;;    ;; This removes unsightly ^M characters that would otherwise
-;;    ;; appear in the output of java applications.
-;;   (add-hook 'comint-output-filter-functions 'comint-strip-ctrl-m)))
-
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(edts-inhibit-package-check t))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
  )
-
-
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (monokai-theme hc-zenburn-theme cider redo+ magit key-chord js2-mode ivy-hydra haskell-mode elpy counsel))))
